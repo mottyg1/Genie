@@ -2,51 +2,56 @@ from jinja2 import Environment
 import json
 import yaml
 from copy import deepcopy
-from pprint import pprint
 
 env = Environment()
 
 REPRESENTATION_FUNCTIONS = {
     "global": {
-        "raw": lambda k, v: v
+        "raw": lambda e: e.value
     },
     "elasticsearch": {
-        "str": lambda k, v: '{{ "term": {{ "{key}": {{ "value": "{value}" }} }} }}'.format(key=k, value=v).replace('"',
-                                                                                                                   '\\\"'),
-        "match": lambda k, v: '{{ "match": {{ "{key}": {{ "value": "{value}" }} }} }}'.format(key=k, value=v).replace(
-            '"', '\\\"'),
-        "int": lambda k, v: '{{ "term": {{ "{key}": {{ "value": {value} }} }} }}'.format(key=k, value=v).replace('"',
-                                                                                                                 '\\\"'),
-        "list": lambda k, v: '{{ "terms": {{ "{key}": {value} }} }}'.format(key=k, value=json.dumps(v)).replace('"',
-                                                                                                                '\\\"'),
-        "dict": lambda k, v: '{{ "range": {{ "{key}": {{ "gt": "{value_from}", "lt": "{value_to}" }} }} }}'.format(
-            key=k, value_from=v.get('from'), value_to=v.get('to')).replace('"', '\\\"')
+        "str": lambda e: '{{ "term": {{ "{key}": {{ "value": "{value}" }} }} }}'.format(key=e.key, value=e.value),
+        "match": lambda e: '{{ "match": {{ "{key}": {{ "value": "{value}" }} }} }}'.format(key=e.key, value=e.value),
+        "int": lambda e: '{{ "term": {{ "{key}": {{ "value": {value} }} }} }}'.format(key=e.key, value=e.value),
+        "list": lambda e: '{{ "terms": {{ "{key}": {value} }} }}'.format(key=e.key, value=json.dumps(e.value)),
+        "dict": lambda e: '{{ "range": {{ "{key}": {{ "gt": "{value_from}", "lt": "{value_to}" }} }} }}'.format(
+            key=e.key, value_from=e.value.get('from'), value_to=e.value.get('to'))
     },
     "solr": {
-        'str': lambda k, v: "{}: {}".format(k, v),
-        'int': lambda k, v: "{}: {}".format(k, v),
-        'list': lambda k, v: '{}: ({})'.format(k, " ".join(v)),
-        'dict': lambda k, v: '{}: [{} TO {}]'.format(k, v.get('from', '*'), v.get('to', '*'))
+        'str': lambda e: "{}: {}".format(e.key, e.value),
+        'int': lambda e: "{}: {}".format(e.key, e.value),
+        'list': lambda e: '{}: ({})'.format(e.key, " ".join(e.value)),
+        'dict': lambda e: '{}: [{} TO {}]'.format(e.key, e.value.get('from', '*'), e.value.get('to', '*'))
     }
 }
 
 
+def genie_filter(func):
+    def wrapper_copy_expression(expression, *args, **kwargs):
+        if not expression:
+            return expression
+        c = deepcopy(expression)
+        func(c, *args, **kwargs)
+        return c
+
+    env.filters[func.__name__] = wrapper_copy_expression
+
+    return wrapper_copy_expression
+
+
+@genie_filter
 def match(expression):
-    e = deepcopy(expression)
-    e.representation_function = 'match'
-    return e
+    expression.representation_function = 'match'
 
 
+@genie_filter
 def key(expression, new_key):
-    e = deepcopy(expression)
-    e.key = new_key
-    return e
+    expression.key = new_key
 
 
+@genie_filter
 def raw(expression):
-    e = deepcopy(expression)
-    e.representation_function = 'raw'
-    return e
+    expression.representation_function = 'raw'
 
 
 class Expression:
@@ -63,7 +68,7 @@ class Expression:
         if not representation_function:
             representation_function = REPRESENTATION_FUNCTIONS['global'][self.representation_function]
 
-        return representation_function(self.key, self.value)
+        return representation_function(self)
 
 
 def expressionize_dict(dict_, dialect):
@@ -73,30 +78,13 @@ def expressionize_dict(dict_, dialect):
     return expressionized_dict
 
 
-env.filters['match'] = match
-env.filters['key'] = key
-env.filters['raw'] = raw
-
 f = yaml.load(open('examples/elasticsearch.yaml'), Loader=yaml.FullLoader)
 
 dialect = f['dialect']
 props = f['props']
-template = env.from_string(json.dumps(f['execution']))
+template = env.from_string(f['execution'])
 
 exec = template.render(expressionize_dict(props, dialect))
-print(json.dumps(json.loads(json.loads(exec)['body'])))
-
-# req = {
-#     'sources': ['a', 'b', 'c'],
-#     'name': 'motty',
-#     'start_time': {
-#         'from': '2019-10-31 17:30:00.000',
-#         'to': '2019-11-01 15:00:00.000'
-#     }
-# }
-#
-# template = Template('{{ sources }} AND {{ name }} AND {{ start_time }}')
-#
-# s = template.render(expressionize_dict(req, 'elasticsearch'))
-#
-# print(s)
+print(yaml.full_load(exec))
+# print(json.dumps(json.loads(json.loads(exec)['body'])))
+# print(exec)
