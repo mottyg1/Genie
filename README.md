@@ -1,2 +1,2 @@
-# genie
+# Genie
 Data querying with templates
