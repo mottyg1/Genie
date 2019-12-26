@@ -1,15 +1,6 @@
 dialect: elasticsearch
 
-props:
-  meta:
-    user_name: mottyg
-  index: all_data
-#  name: [mot, yos, itt]
-  start_time:
-    from: 2019-01-01 07:00:00.000
-    to: 2020-01-01 07:00:00.000
-
-execution: |
+execution:
   type: http
   method: POST
   url: http://mycluster:9200/{{index|raw}}/_search
@@ -22,8 +13,8 @@ execution: |
             {{ name }},
             {{ start_time }},
             {{ name|key('tra_name')|match }}
-          ],
-        },
+          ]
+        }
       }
     }
     {% endfilter %}
