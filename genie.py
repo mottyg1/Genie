@@ -7,7 +7,8 @@ env = Environment()
 
 REPRESENTATION_FUNCTIONS = {
     "global": {
-        "raw": lambda e: e.value
+        "raw": lambda e: e.value,
+        "empty": lambda e: None
     },
     "elasticsearch": {
         "str": lambda e: '{{ "term": {{ "{key}": {{ "value": "{value}" }} }} }}'.format(key=e.key, value=e.value),
@@ -37,6 +38,32 @@ def genie_filter(func):
     env.filters[func.__name__] = wrapper_copy_expression
 
     return wrapper_copy_expression
+
+
+def register_jinja2_filter(func):
+    env.filters[func.__name__] = func
+    return func
+
+
+@register_jinja2_filter
+def dirty_json(line):
+    while True:
+        try:
+            json.loads(line)  # try to parse...
+            break  # parsing worked -> exit loop
+
+        except Exception as e:
+            if line[e.pos] == ',':  # preceding comma
+                line = line[:e.pos] + line[e.pos + 1:]
+
+            elif line[e.pos] in [']', '}']:  # trailing comma
+                bad_comma = line[:e.pos].rfind(',')
+                line = line[:bad_comma] + line[bad_comma + 1:]
+
+            else:
+                raise e
+
+    return line
 
 
 @genie_filter
@@ -78,7 +105,7 @@ def expressionize_dict(dict_, dialect):
     return expressionized_dict
 
 
-f = yaml.load(open('examples/elasticsearch.yaml'), Loader=yaml.FullLoader)
+f = yaml.full_load(open('examples/elasticsearch.yaml'))
 
 dialect = f['dialect']
 props = f['props']
