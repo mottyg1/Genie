@@ -1,7 +1,19 @@
 from copy import deepcopy
 import json
+import re
+import luqum.parser
+from luqum.parser import parser as luqum_parser
 
 DEFAULT_FILTERS = {}
+
+BAD_SQL_PATTERNS = [re.compile(x) for x in [
+    r"(AND|OR)\s*$",  # AND or OR at the end
+    r"^\s*(AND|OR)",  # AND or OR at the beginning
+    r"(AND|OR)\s*(?=\))",  # AND or OR right before closing parenthesis
+    r"(?<=\()\s*(AND|OR)",  # AND or OR right after opening parenthesis
+    r"(AND|OR)(?=\s*(?:AND|OR))",  # two ANDs or ORs without any expression between
+    r"\(\s*\)",  # empty parenthesis
+]]
 
 
 def genie_filter(func):
@@ -40,6 +52,24 @@ def dirty_json(line):
             else:
                 raise e
 
+    return line
+
+
+@register_jinja2_filter
+def dirty_solr(line):
+    while True:
+        try:
+            luqum_parser.parse(line)  # try to parse...
+            break  # parsing worked -> exit loop
+
+        except luqum.parser.ParseError as e:
+            matches = 0
+            for pattern in BAD_SQL_PATTERNS:
+                result = pattern.subn("", line)
+                line = result[0]
+                matches += result[1]
+            if matches == 0:
+                raise e
     return line
 
 

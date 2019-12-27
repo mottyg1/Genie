@@ -1,8 +1,17 @@
 import json
 
+
+def raw(expression):
+    return str(expression.value)
+
+
 REPRESENTATION_FUNCTIONS = {
     "global": {
-        "raw": lambda e: e.value,
+        "str": raw,
+        "int": raw,
+        "list": raw,
+        "dict": raw,
+        "raw": raw,
         "empty": lambda e: None
     },
     "elasticsearch": {
@@ -20,3 +29,6 @@ REPRESENTATION_FUNCTIONS = {
         'dict': lambda e: '{}: [{} TO {}]'.format(e.key, e.value.get('from', '*'), e.value.get('to', '*'))
     }
 }
+
+
+

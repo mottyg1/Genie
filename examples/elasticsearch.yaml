@@ -1,4 +1,4 @@
-dialect: elasticsearch
+# elasticsearch
 
 execution:
   type: http

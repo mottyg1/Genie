@@ -64,7 +64,10 @@ class GenieLoader(BaseLoader):
                 f.close()
 
             mtime = path.getmtime(filename)
-            self.queries_dialect[path.basename(filename)] = yaml.full_load(contents)['dialect']
+            try:
+                self.queries_dialect[path.basename(filename)] = contents.partition('\n')[0][2:]
+            except Exception:
+                self.queries_dialect[path.basename(filename)] = None
 
             def uptodate():
                 try:

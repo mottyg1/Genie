@@ -1,0 +1,10 @@
+# solr
+
+execution:
+  json:
+    fq: |
+      {% filter dirty_solr %}
+      {{ name }} AND
+      (({{ fgh }} AND {{ abc }}) OR {{ def }})
+      AND {{ start_time }} AND {{ index|key('index2') }}
+      {% endfilter %}
