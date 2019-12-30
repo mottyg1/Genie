@@ -11,7 +11,7 @@ BAD_SQL_PATTERNS = [re.compile(x) for x in [
     r"^\s*(AND|OR)",  # AND or OR at the beginning
     r"(AND|OR)\s*(?=\))",  # AND or OR right before closing parenthesis
     r"(?<=\()\s*(AND|OR)",  # AND or OR right after opening parenthesis
-    r"(AND|OR)(?=\s*(?:AND|OR))",  # two ANDs or ORs without any expression between
+    r"(AND|OR)(?=\s+(?:AND|OR))",  # two ANDs or ORs without any expression between
     r"\(\s*\)",  # empty parenthesis
 ]]
 
@@ -50,6 +50,7 @@ def dirty_json(line):
                 line = line[:bad_comma] + line[bad_comma + 1:]
 
             else:
+                print(line)
                 raise e
 
     return line

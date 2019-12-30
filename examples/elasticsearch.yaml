@@ -1,10 +1,10 @@
-# elasticsearch
-
+{% set genie = namespace() %}
 execution:
   type: http
   method: POST
-  url: http://mycluster:9200/{{index|raw}}/_search
+  url: http://mycluster:9200/{{index}}/_search
   json: |
+    {% set genie.dialect="elasticsearch" %}
     {% filter dirty_json %}
     {
       "query": {
@@ -12,7 +12,7 @@ execution:
           "must": [
             {{ name }},
             {{ start_time }},
-            {{ name|key('tra_name')|match }}
+            {{ name|key('family_name')|match }}
           ]
         }
       }
