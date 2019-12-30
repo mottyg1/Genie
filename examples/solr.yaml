@@ -1,5 +1,5 @@
-# solr
-
+{% set genie = namespace() %}
+{% set genie.dialect="solr" %}
 execution:
   json:
     fq: |
