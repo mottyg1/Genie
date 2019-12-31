@@ -20,6 +20,14 @@ def match(e):
         return bool_template.format(','.join(match_blocks))
 
 
+solr_trans = str.maketrans({'"': r'\"',
+                            "]": r"\]",
+                            "[": r"\[",
+                            ")": r"\)",
+                            "(": r"\(",
+                            "\\": r"\\"
+                            })
+
 DEFAULT_REPRESENTATION_FUNCTION = raw
 
 REPRESENTATION_FUNCTIONS = {
@@ -34,7 +42,7 @@ REPRESENTATION_FUNCTIONS = {
     "solr": {
         'str': lambda e: "{}: {}".format(e.key, e.value),
         'int': lambda e: "{}: {}".format(e.key, e.value),
-        'list': lambda e: '{}: ({})'.format(e.key, " ".join(e.value)),
+        'list': lambda e: '{}: ({})'.format(e.key, " ".join(['"{}"'.format(x.translate(solr_trans)) for x in e.value])),
         'dict': lambda e: '{}: [{} TO {}]'.format(e.key, e.value.get('from', '*'), e.value.get('to', '*'))
     }
 }
