@@ -2,8 +2,7 @@
 Genie is a jinja2 "supplement" which helps you generate queries from
  HTML forms or json object easily, while retaining full control over the 
  query's structure.
- > Let's make some magic! 
- > - Genie
+ > _"Let's make some magic!"_ ~ Genie
 
 # Getting Started
 We'll start with a simple elasticsearch example.
@@ -21,7 +20,7 @@ Let's say we have the following json which represents a
 }
 ```
 We can then define the following elasticsearch query template:
-```json
+```
 {% set genie = namespace(dialect="elasticsearch") %}
 {
   "query": {
@@ -35,18 +34,18 @@ We can then define the following elasticsearch query template:
 }
 
 ```
-Or the following Solr (lucene) template:
-```sqlite-sql
+or the following Solr (lucene) template:
+```
 {% set genie = namespace(dialect="solr") %}
 {{ name }} AND {{ year }}
 ```
-Rendering both of them:
+Rendering any of them using genie:
 ```python
 from genie.environment import GenieEnvironment
 
 query = GenieEnvironment().from_string(template).render(json)
 ```
-Will result in the following queries respectively:
+will result in the following queries respectively:
 ```json
 {
   "query": {
@@ -60,9 +59,10 @@ Will result in the following queries respectively:
 }
 ```
 or
-```sqlite-sql
+```
 name: ("Toy Story" "Lion King") AND year: [2005 TO 2019]
 ```
+which are both fully valid and runnable right out of the box!
 
 ## query types
 
