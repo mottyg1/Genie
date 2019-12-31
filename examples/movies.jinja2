@@ -3,7 +3,7 @@
   "query": {
     "bool": {
       "must": [
-        {{ name }},
+        {{ name|match }},
         {{ year }}
       ]
     }

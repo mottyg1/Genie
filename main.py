@@ -24,7 +24,7 @@ tree = luqum_parser.parse(query)
 print(luqum_prettify(tree))
 
 j = {
-    "name": ["Toy Story", "Lion King", 'abv"c ccv'],
+    "name": ["Toy Story", "Lion King"],
     "year": {
         "from": "2005",
         "to": "2019"
