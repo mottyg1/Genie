@@ -22,3 +22,12 @@ print(query)
 print()
 tree = luqum_parser.parse(query)
 print(luqum_prettify(tree))
+
+j = {
+    "name": ["Toy Story", "Lion King", 'abv"c ccv'],
+    "year": {
+        "from": "2005",
+        "to": "2019"
+    }
+}
+print(env.render("movies.jinja2", j))

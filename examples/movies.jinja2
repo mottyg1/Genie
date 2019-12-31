@@ -1,0 +1,14 @@
+{% set genie = namespace(dialect="elasticsearch") %}
+{
+  "query": {
+    "bool": {
+      "must": [
+        {{ name }},
+        {{ year }}
+      ]
+    }
+  }
+}
+
+{% set genie = namespace(dialect="solr") %}
+{{ name }} AND {{ year }}
