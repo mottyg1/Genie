@@ -2,7 +2,7 @@
 Genie is a jinja2 "supplement" which helps you generate queries from
  HTML forms or JSON objects easily, while retaining full control over the 
  query's structure.
- > _"Let's make some magic!"_
+ > "Let's make some magic!"
  > 
  > ~ Genie, Aladdin
 
@@ -205,14 +205,24 @@ You can find a list of all the defaults behaviors in the reference.
 
 
 # Reference
-filters in each dialect
-## global
+List of available filters in each dialect
 
-## elastic
+### Global Filters
+- __key__ - change the key the expression is filtering on. Usage:
+    ```
+    {{ name|key('first_name') }} OR {{ name|key('last_name') }}
+    ```
+    This template will filter both on first_name and on last_name
+- __raw__ - the expression will evaluate in it raw value disregarding the configured dialect 
+(quicker than disabling and enabling the dialect again) 
 
-## solr
+### ElasticSearch Filters
+- __match__ - changes the query type to match instead of term. Works on strings and lists.
 
-# Developer Documentation
+### Solr Filters
+- Nothing to find here for now
+
+# WIP - Developer Documentation
 > "Like so many things, it is not what's outside, but what is inside that counts."
 > 
 > ~ Merchant, Aladdin
